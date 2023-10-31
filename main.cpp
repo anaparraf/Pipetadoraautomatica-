@@ -1,7 +1,7 @@
 #include "mbed.h"
 #include "Arduino.h"
 #include <MCUFRIEND_kbv.h>
-#include <cstdio>
+#include <cstdio> 
 #include "pipe.h"
 #define velo 0.0015
 DigitalOut LED(PA_5); // é o LED (LED1) na placa NUCLEO-F103RB
@@ -372,6 +372,7 @@ void teste_pipeta(void){
 void principal(void){
     botao1.fall(&toggle);
     estadoemergencia.fall(&toggle_emergencia);
+    estadoemergencia.rise(&toggle_emergencia);
     debounce.start();
     while(1){
         rele1=1;
@@ -643,7 +644,7 @@ void principal(void){
         if(estadoBE==1){
             if (fixo_emergencia==1){
             emergencia(); fixo_emergencia=0;}
-            fixo_1=1;
+            fixo_1=1; tela1=1; tela0=0; tela2=0;tela3=0; tela4=0; tela5=0;
         }
     
 
