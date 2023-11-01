@@ -1,3 +1,6 @@
+// versao funcionando
+
+
 #include "mbed.h"
 #include "Arduino.h"
 #include <MCUFRIEND_kbv.h>
@@ -51,7 +54,7 @@ int pos_atual_y; int contador_y=0;int flag_jogManual = 1;int valor_final_y=10000
 int volume_inicial=0; int volume_final=10; int fixo_1_mov=0; int fixo_1_mov_2=0;
 int botao_teste =0; int botao_teste_tela0=0; int botao_teste_tela2=0; int botao_teste_tela3=0; int botao_teste_tela4=0; int botao_teste_tela5=0;int sensibilidade_x=1500;
 int variavel_pipeta=0; int index_pipeta=0; int fixo_emergencia=1;
-bool estadoBE = 0;
+bool estadoBE = 0; bool bubu =0;
 void tela(){
     tft.fillRoundRect(2,2, altura-4,larg-4,0, WHITE);
     tft.fillRoundRect(6,6,altura-12,larg-12,0, GRAY);
@@ -294,10 +297,10 @@ void jogManual(){
         }
 
 
-void toggle_emergencia(void){
-    estadoBE=!estadoBE;
-
-}
+void toggle_emergencia1(void){
+    estadoBE=1;}
+void toggle_emergencia2(void){
+    estadoBE=0;}
 
 void toggle(void);
 void toggle(){
@@ -371,10 +374,11 @@ void teste_pipeta(void){
 
 void principal(void){
     botao1.fall(&toggle);
-    estadoemergencia.fall(&toggle_emergencia);
-    estadoemergencia.rise(&toggle_emergencia);
+    estadoemergencia.fall(&toggle_emergencia1);
+    estadoemergencia.rise(&toggle_emergencia2);
     debounce.start();
     while(1){
+        bubu=1;
         rele1=1;
         rele2=1;
         Enable=1;
@@ -382,7 +386,8 @@ void principal(void){
         Sentido=0;
         y=yAxis.read()*1000;
         x=xAxis.read()*1000;
-        //estadoBE = estadoemergencia.read();
+        
+         //estadoBE = estadoemergencia.read();
         //printf("\rY=%4d",y);
         //printf("\rx=%4d",x);
         if(estadoBE==0){
