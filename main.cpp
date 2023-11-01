@@ -1,6 +1,5 @@
 // versao funcionando
 
-
 #include "mbed.h"
 #include "Arduino.h"
 #include <MCUFRIEND_kbv.h>
