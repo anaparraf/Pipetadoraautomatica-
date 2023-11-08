@@ -1,5 +1,3 @@
-// versao funcionando
-
 #include "mbed.h"
 #include "Arduino.h"
 #include <MCUFRIEND_kbv.h>
@@ -20,6 +18,7 @@ DigitalOut Passos(PB_14);
 DigitalOut Passos_x(PB_11);
 DigitalOut rele1(PC_2);
 InterruptIn estadoemergencia(PC_8);
+BusOut MotorZ (PC_10,PA_13, PC_12, PA_14);
 DigitalOut rele2(PC_3);
 MCUFRIEND_kbv tft;
 Timer debounce; 
@@ -49,18 +48,18 @@ int teste_y=1; int teste_y_2=1; int teste_x_2=1; int teste_x_3=1; int teste_x_0=
 int vol=1; int muda=0; int libera=0; int letras_tela1=0;
 int salva_x=0; int salva_y=0; int salva_z=0;
 int lista_x[10]={0,0,0,0,0,0,0,0,0,0}; int lista_y[10]={0,0,0,0,0,0,0,0,0,0}; int lista_z[10]; int lista_vol[10]={0,0,0,0,0,0,0,0,0,0}; int index=0; int estado=0;
-int pos_atual_y; int contador_y=0;int flag_jogManual = 1;int valor_final_y=10000; int valor_inicial_y=0; int sensibilidade=2000; int pos_atual_x; int contador_x=0; int valor_final_x=999; int valor_inicial_x=0;
-int volume_inicial=0; int volume_final=10; int fixo_1_mov=0; int fixo_1_mov_2=0;
-int botao_teste =0; int botao_teste_tela0=0; int botao_teste_tela2=0; int botao_teste_tela3=0; int botao_teste_tela4=0; int botao_teste_tela5=0;int sensibilidade_x=1500;
+int pos_atual_y; int contador_y=0;int flag_jogManual = 1;int valor_final_y=10000; int valor_inicial_y=0; int sensibilidade=1800; int pos_atual_x; int contador_x=0; int valor_final_x=10000; int valor_inicial_x=0;
+int volume_inicial=0; int volume_final=10; int fixo_1_mov=0; int fixo_1_mov_2=0; int contador_z=0; int valor_inicial_z=0; int valor_final_z=10000;
+int botao_teste =0; int botao_teste_tela0=0; int botao_teste_tela2=0; int botao_teste_tela3=0; int botao_teste_tela4=0; int botao_teste_tela5=0;int sensibilidade_x=2000;
 int variavel_pipeta=0; int index_pipeta=0; int fixo_emergencia=1;
-bool estadoBE = 0; bool bubu =0;
+bool estadoBE = 0;   int dir_x = 0;int dir_y = 0;int dir_z = 0; int contador_x_coleta=0;
 void tela(){
     tft.fillRoundRect(2,2, altura-4,larg-4,0, WHITE);
     tft.fillRoundRect(6,6,altura-12,larg-12,0, GRAY);
     tft.fillRoundRect(15, 13, altura-30, 45,0, WHITE);
     tft.setTextSize(2);
     tft.setTextColor(BLACK);
-    tft.setCursor(90,28);
+    tft.setCursor(90,28); 
     tft.println("PIPETAGEM");
     tft.drawRGBBitmap(220,16,pipeta,40,40);
     tft.fillRoundRect(larg-120, 80, 100, 40, 15, WHITE); //botao
@@ -70,6 +69,79 @@ void tela(){
     tft.setCursor(larg-110,150);
     tft.println("Memoria");
     }
+void move_motor_z(int dir_dz, int passos_z) {
+  for (int i = 0; i < passos_z; i++) {
+    for (int j = 0; j <= 3; j++) {
+      if (dir_dz == 0) {
+        MotorZ= 1 << j;
+      } else {
+        MotorZ = 8 >> j;
+      }
+      wait(0.002);
+      // printf("Passo i: %d \n\r  j=%d\n\r  Hex: %x\n\n", i, j, 1 << j);
+    }
+  }
+  MotorZ = 0;
+}
+
+
+void deslocamento(int x1, int y1, int z1, int x2, int y2, int z2) {
+  int dx = x2 - x1;
+  int dy = y2 - y1;
+  int dz = z2 - z1;
+  // calculando o sentido de rotacao
+
+  if (dx < 0) {
+      // Negativa manda zero
+    dir_x = 0;
+  } else {
+    dir_x = 1;
+  }
+
+  if (dy < 0) {
+    dir_y = 0;
+  } else {
+    dir_y = 1;
+  }
+
+  if (dz < 0) {
+    dir_z = 0;
+  } else {
+      dir_z = 1;}
+}
+
+
+
+
+void deltas(int index_x){
+    if(lista_y[0]>lista_y[index_x]){
+        Sentido=0;}
+    else{
+        Sentido=1;
+    }}
+
+
+void movimento_coleta(){
+    contador_x=contador_x_coleta;
+    Enable_x=0;
+    if(contador_x_coleta>lista_x[0]){
+        Sentido_x=0;
+        Passos_x=1;
+        wait_us(sensibilidade_x);
+        Passos_x=0;
+        wait_us(sensibilidade_x);
+        contador_x_coleta-=1;}
+
+    else{
+        Sentido_x=1;
+        Passos_x=1;
+        wait_us(sensibilidade_x);
+        Passos_x=0;
+        wait_us(sensibilidade_x);
+        contador_x_coleta+=1;
+    }
+}
+
 
 void mov_tela1(){
     y=yAxis.read()*1000;
@@ -235,19 +307,21 @@ void emergencia(){
 void jogManual(){
     y=yAxis.read()*1000;
     x=xAxis.read()*1000;
-    if(y>750){
+    //if(y<750 && y>300){Enable=1;}
+     if(y>750){
         y=yAxis.read()*1000;
         if(contador_y>=valor_final_y){
             contador_y=valor_final_y;
             Enable=1;}
         else{
         Enable=0;
-        Sentido=0;
+        Sentido=1;
         Passos=1;
         //if(y<400 & y>200){sensibilidade=(0.015*y-2)*1000;}
         //if(y<10){sensibilidade=2000;}
         wait_us(sensibilidade);
         Passos=0;
+        wait_us(sensibilidade);
         contador_y+=1;}
     }
     if(y<300){
@@ -257,44 +331,80 @@ void jogManual(){
             Enable=1;}
         else{
         Enable=0;
-        Sentido=1;
+        Sentido=0;
         Passos=1;
         //if(y>500 & y<800){sensibilidade=5000;}
         //if(y>801){sensibilidade=2000;}
         wait_us(sensibilidade);
         Passos=0;
+        wait_us(sensibilidade);
         contador_y-=1;}}
-    if(y<750 && y>300){Enable=1;}
-    if(x<300){
+    if(x<200){
         x=xAxis.read()*1000;
         if(contador_x<=valor_inicial_x){
-            contador_x=valor_final_x;
+            contador_x=valor_inicial_x;
             Enable_x=1;}
         else {
         Enable_x=0;
-        Sentido_x=1;
+        Sentido_x=0;
         Passos_x=1;
         wait_us(sensibilidade_x);
         Passos_x=0;
+        wait_us(sensibilidade_x);
+
 
         contador_x-=1;}}
     
     if(x>800){
         x=xAxis.read()*1000;
         if(contador_x>=valor_final_x){
+            contador_x=valor_final_x;
             Enable_x=1;}
         else{
             Enable_x=0;
-            Sentido_x=0;
+            Sentido_x=1;
             Passos_x=1;
             wait_us(sensibilidade_x);
             Passos_x=0;
+            wait_us(sensibilidade_x);
             contador_x+=1;}}
 
-    if(x<800 && x>300){Enable_x=1;}
+    //if(x<800 && x>300){Enable_x=1;}
         
         }
 
+
+void mov_z(){
+    y=yAxis.read()*1000;
+    if(y<10){
+        y=yAxis.read()*1000;
+        if(contador_z>=valor_final_z){
+            contador_z=valor_final_z;}
+        else{
+            for(int i=0; i<4;i++){
+                MotorZ=1<<i; wait(0.002);
+                contador_z+=1;
+
+            }
+        }}
+    if(y<950 && y>10){
+        MotorZ=0 ;
+    }
+
+    if(y>950){
+        y=yAxis.read()*1000;
+        if(contador_z<=valor_inicial_z){
+            contador_z=valor_inicial_z;}
+        else{
+            for(int i=3; i>-1; i--){
+                MotorZ = 1<< i; wait(0.002);
+                contador_z-=1;
+            }
+        }
+    }
+
+
+}
 
 void toggle_emergencia1(void){
     estadoBE=1;}
@@ -355,10 +465,12 @@ void pipetar(void){
 }
 
 
+
 void teste_pipeta(void){
 
     while(index_pipeta<9){
     if (variavel_pipeta<lista_vol[index_pipeta]){
+        movimento_coleta();
         wait(5); //pega
         pipetar();
         wait(5); //solta[i]
@@ -369,15 +481,13 @@ void teste_pipeta(void){
         index_pipeta+=1;}
     }
 }
-
-
+ 
 void principal(void){
     botao1.fall(&toggle);
     estadoemergencia.fall(&toggle_emergencia1);
     estadoemergencia.rise(&toggle_emergencia2);
     debounce.start();
     while(1){
-        bubu=1;
         rele1=1;
         rele2=1;
         Enable=1;
@@ -566,7 +676,10 @@ void principal(void){
 
                 if(botao_teste_tela3==1){tela3=0;fixo_2=1;tela2=1;lado_tela3=0;teste_x_2=1;teste_y_2=1;botao_teste_tela3=0;}
                 if (libera==1){ 
-                    jogManual();}
+                    //jogManual();
+                    
+                    mov_z();
+                    }
                     
                     
                     
@@ -581,7 +694,7 @@ void principal(void){
                     if(fixo_5==1){historico();fixo_5=0;
                     lista_x[index]=contador_x;
                     lista_y[index]=contador_y;
-                    lista_z[index]=salva_z;
+                    lista_z[index]=contador_z;
                     lista_vol[index]=vol;
                     
                     tft.setCursor(11,43);tft.println(lista_x[0]);tft.setCursor(55,43);tft.println(lista_y[0]);tft.setCursor(99,43);tft.println(lista_z[0]);tft.setCursor(140,43);tft.println('-');
