@@ -52,7 +52,7 @@ int pos_atual_y; int contador_y=0;int flag_jogManual = 1;int valor_final_y=10000
 int volume_inicial=0; int volume_final=10; int fixo_1_mov=0; int fixo_1_mov_2=0; int contador_z=0; int valor_inicial_z=0; int valor_final_z=10000;
 int botao_teste =0; int botao_teste_tela0=0; int botao_teste_tela2=0; int botao_teste_tela3=0; int botao_teste_tela4=0; int botao_teste_tela5=0;int sensibilidade_x=2000;
 int variavel_pipeta=0; int index_pipeta=0; int fixo_emergencia=1;
-bool estadoBE = 0;   int dir_x = 0;int dir_y = 0;int dir_z = 0; int contador_x_coleta=0;
+bool estadoBE = 0;   int dir_x = 0;int dir_y = 0;int dir_z = 0; int contador_x_coleta=0; float tempo=0.002;
 void tela(){
     tft.fillRoundRect(2,2, altura-4,larg-4,0, WHITE);
     tft.fillRoundRect(6,6,altura-12,larg-12,0, GRAY);
@@ -316,12 +316,9 @@ void jogManual(){
         else{
         Enable=0;
         Sentido=1;
-        Passos=1;
         //if(y<400 & y>200){sensibilidade=(0.015*y-2)*1000;}
         //if(y<10){sensibilidade=2000;}
-        wait_us(sensibilidade);
-        Passos=0;
-        wait_us(sensibilidade);
+        
         contador_y+=1;}
     }
     if(y<300){
@@ -332,13 +329,9 @@ void jogManual(){
         else{
         Enable=0;
         Sentido=0;
-        Passos=1;
-        //if(y>500 & y<800){sensibilidade=5000;}
-        //if(y>801){sensibilidade=2000;}
-        wait_us(sensibilidade);
-        Passos=0;
-        wait_us(sensibilidade);
-        contador_y-=1;}}
+       
+         
+        }}
     if(x<200){
         x=xAxis.read()*1000;
         if(contador_x<=valor_inicial_x){
@@ -347,11 +340,6 @@ void jogManual(){
         else {
         Enable_x=0;
         Sentido_x=0;
-        Passos_x=1;
-        wait_us(sensibilidade_x);
-        Passos_x=0;
-        wait_us(sensibilidade_x);
-
 
         contador_x-=1;}}
     
@@ -363,11 +351,19 @@ void jogManual(){
         else{
             Enable_x=0;
             Sentido_x=1;
-            Passos_x=1;
-            wait_us(sensibilidade_x);
-            Passos_x=0;
-            wait_us(sensibilidade_x);
             contador_x+=1;}}
+    Passos_x=1;
+    Passos=1;
+    wait_us(sensibilidade_x);
+    Passos_x=0;
+    Passos=0;
+   // wait_us(sensibilidade_x);
+   
+    //wait_us(sensibilidade);
+    
+    //wait_us(sensibilidade);
+
+
 
     //if(x<800 && x>300){Enable_x=1;}
         
@@ -464,21 +460,70 @@ void pipetar(void){
 
 }
 
+void solta(int index){
+    if(contador_x<lista_x[index]){
+     while(contador_x<lista_x[index])
+        {Enable_x=0;
+        Sentido_x=1;
+        Passos_x=0;
+        wait(tempo);
+        Passos_x=1;
+        wait(tempo);
+        contador_x+=1;}}
+
+    else {
+        while(contador_x>lista_x[index]){
+        Enable_x=0;
+        Sentido_x=0;
+        Passos_x=0;
+        wait(tempo);
+        Passos_x=1;
+        wait(tempo);
+        contador_x-=1;}}
+}
 
 
-void teste_pipeta(void){
 
-    while(index_pipeta<9){
-    if (variavel_pipeta<lista_vol[index_pipeta]){
-        movimento_coleta();
-        wait(5); //pega
-        pipetar();
-        wait(5); //solta[i]
-        pipetar();
-        variavel_pipeta+=1;}
+void pega(){
+    if(contador_x<lista_x[0]){
+        while(contador_x<lista_x[0]){
+        Enable_x=0;
+        Sentido_x=1;
+        Passos_x=0;
+        wait(tempo);
+        Passos_x=1;
+        wait(tempo);
+        contador_x+=1;}}
+
     else{
-        variavel_pipeta=0;
-        index_pipeta+=1;}
+        while(contador_x>lista_x[0]){
+        Enable_x=0;
+        Sentido_x=0;
+        Passos_x=0;
+        wait(tempo);
+        Passos_x=1;
+        wait(tempo);
+        contador_x-=1;}
+
+
+}
+}
+
+
+
+
+void teste_pipeta(){
+    while(index_pipeta <9){
+            if(variavel_pipeta<lista_vol[index_pipeta]){
+                pega();
+                pipetar();
+                solta(index_pipeta);
+                pipetar();
+                variavel_pipeta+=1;}
+            else{
+                variavel_pipeta=0;
+                index_pipeta+=1;
+            }
     }
 }
  
@@ -676,9 +721,9 @@ void principal(void){
 
                 if(botao_teste_tela3==1){tela3=0;fixo_2=1;tela2=1;lado_tela3=0;teste_x_2=1;teste_y_2=1;botao_teste_tela3=0;}
                 if (libera==1){ 
-                    //jogManual();
+                    jogManual();
                     
-                    mov_z();
+                    //mov_z();
                     }
                     
                     
