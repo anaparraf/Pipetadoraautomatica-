@@ -63,8 +63,8 @@ int lista_x[10]={0,0,0,0,0,0,0,0,0,0}; int lista_y[10]={0,0,0,0,0,0,0,0,0,0}; in
 int pos_atual_y; int contador_y=0;int flag_jogManual = 1;int valor_final_y=10000; int sensibilidade=1800; int pos_atual_x; int contador_x=0; int valor_final_x=10000; int valor_inicial_x=0;
 int volume_inicial=0; int volume_final=10; int fixo_1_mov=0; int fixo_1_mov_2=0; int contador_z=0; int valor_inicial_z=0; int valor_final_z=10000;
 int botao_teste =0; int botao_teste_tela0=0; int botao_teste_tela2=0; int botao_teste_tela3=0; int botao_teste_tela4=0; int botao_teste_tela5=0;int sensibilidade_x=1000; int botao_teste_tela6=0;
-int variavel_pipeta=0; int index_pipeta=0; int fixo_emergencia=1;
-bool estadoBE = 0;   int dir_x = 0;int dir_y = 0;int dir_z = 0; int contador_x_coleta=0; float tempo=0.0017;int botoes=0;bool fdc_y=0; int controle_da_pipeta = 1;
+int variavel_pipeta=0; int index_pipeta=1; int fixo_emergencia=1;
+bool estadoBE = 0;int dir_x = 0;int dir_y = 0; int dir_z = 0; int contador_x_coleta=0; float tempo=0.0017;int botoes=0;bool fdc_y=0; int controle_da_pipeta = 1;
 bool limite_x = 0;
 bool limite_y = 0;
 bool limite_z=0;
@@ -206,7 +206,7 @@ void mapa_p3(){
                 p_total_x = int((caminho_xm) * 36);
                 p_total_y = int((caminho_ym) * 36);
 
-                while(contador_x <= p_total_x || contador_y <= p_total_y){
+                while((contador_x <= p_total_x || contador_y <= p_total_y) && estadoBE==0){
 
                     if(contador_x <= p_total_x) {
 
@@ -252,7 +252,7 @@ void mapa_p3(){
                 p_total_x = int((caminho_xm) * 36);
                 p_total_y = int(abs(caminho_ym) * 36);
 
-                while(contador_x <= p_total_x || contador_y <= p_total_y){
+                while((contador_x <= p_total_x || contador_y <= p_total_y) && estadoBE==0){
 
                     if(contador_x <= p_total_x) {
 
@@ -299,7 +299,7 @@ void mapa_p3(){
                 p_total_x = int(abs(caminho_xm) * 36);
                 p_total_y = int((caminho_ym) * 36);
 
-                while(contador_x <= p_total_x || contador_y <= p_total_y){
+                while((contador_x <= p_total_x || contador_y <= p_total_y) && estadoBE==0){
 
                     if(contador_x <= p_total_x) {
 
@@ -584,48 +584,6 @@ void emergencia(){
     tft.drawRGBBitmap(110,80,kaique,100,107);
 }
 
-void tela_pipetagem(){
-    if(fixo_pipeta==0 && estadoBE!=1){
-        tft.fillRoundRect(2,2, altura-4,larg-4,0, WHITE);
-        tft.fillRoundRect(6,6,altura-12,larg-12,0, GRAY);
-        tft.fillRoundRect(15, 13, altura-30, 45,0, WHITE);
-        tft.setTextSize(2);
-        tft.setTextColor(BLACK);
-        tft.setCursor(50,28);
-        tft.println("PIPETAGEM INICIADA");
-        tft.fillRoundRect(40, 180,100,50,15, WHITE);
-        tft.fillRoundRect(170, 180,100,50,15, WHITE);
-        tft.setCursor(50,200);
-        tft.println("Repetir");
-        tft.setCursor(195,190);
-        tft.println("Novo");
-        tft.setCursor(195,210);
-        tft.println("Ciclo");
-        
-        fixo_pipeta=1;}
-        if(lista_vol[index_pipeta]>0 && estadoBE!=1){
-            tft.setCursor(80,100);
-            tft.println("POSICAO:");
-            tft.fillRoundRect(170, 90,30,40,0, GRAY);
-            tft.setCursor(180,100);
-            tft.println(index_pipeta);
-            tft.setCursor(80,150);
-            tft.println("FALTAM:");
-            tft.setCursor(170,150);
-            tft.fillRoundRect(165, 140,30,40,0, GRAY);
-            tft.println(lista_vol[index_pipeta]-variavel_pipeta);
-            tft.setCursor(190,150);
-            tft.println("ml");}
-        if(lista_vol[index_pipeta]==0 && estadoBE!=1){
-            tft.fillRoundRect(15, 13, altura-30, 45,0, WHITE);
-            tft.setTextSize(2);
-            tft.setTextColor(BLACK);
-            tft.setCursor(50,28);
-            tft.println("PIPETAGEM FINALIZADA");
-                }
-
-
-}
 
 void jogManual(){
     int valor_maximo_y;
@@ -695,7 +653,7 @@ void jogManual(){
 
 void novo_z(){
     y=yAxis.read()*1000;
-    while(y<100 && FDC_A_Z==0){
+    while(y<100 && FDC_A_Z==0 && estadoBE==0){
         y=yAxis.read()*1000;
         Enable_z=1;
         Sentido_z=1;
@@ -704,7 +662,7 @@ void novo_z(){
         Passos=0;
         wait_us(sensibilidade_x);
         contador_z-=1;}
-    while(y>900 && FDC_A_Z==0){
+    while(y>900 && FDC_A_Z==0 && estadoBE==0){
         y=yAxis.read()*1000;
         Enable_z=1;
         Sentido_z=0;
@@ -720,14 +678,14 @@ void novo_z(){
 
 void zera_z(){
     limite_z=0;
-    while(limite_z == 0){
+    while(limite_z == 0 && estadoBE==0){
             Enable_z = 1;
             Sentido_z = 1;
             Passos = 1;
             wait_us(sensibilidade_x);
             Passos=0;
             wait_us(sensibilidade_x);
-            while (FDC_A_Z == 1) {
+            while (FDC_A_Z == 1 && estadoBE==0) {
                 Sentido_z = 0;
                 Passos = 1;
                 wait_us(sensibilidade_x);
@@ -747,6 +705,49 @@ void zera_z(){
 }
 
 
+void tela_pipetagem(){
+    if(fixo_pipeta==0 && estadoBE==0){
+        tft.fillRoundRect(2,2, altura-4,larg-4,0, WHITE);
+        tft.fillRoundRect(6,6,altura-12,larg-12,0, GRAY);
+        tft.fillRoundRect(15, 13, altura-30, 45,0, WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(BLACK);
+        tft.setCursor(50,28);
+        tft.println("PIPETAGEM INICIADA");
+        tft.fillRoundRect(40, 180,100,50,15, WHITE);
+        tft.fillRoundRect(170, 180,100,50,15, WHITE);
+        tft.setCursor(50,200);
+        tft.println("Repetir");
+        tft.setCursor(195,190);
+        tft.println("Novo");
+        tft.setCursor(195,210);
+        tft.println("Ciclo");
+        fixo_pipeta=1;}
+        if(lista_vol[index_pipeta]>0 && estadoBE==0){
+            tft.setCursor(80,100);
+            tft.println("POSICAO:");
+            tft.fillRoundRect(170, 90,30,40,0, GRAY);
+            tft.setCursor(180,100);
+            tft.println(index_pipeta);
+            tft.setCursor(80,150);
+            tft.println("FALTAM:");
+            tft.setCursor(170,150);
+            tft.fillRoundRect(165, 140,30,40,0, GRAY);
+            tft.println(lista_vol[index_pipeta]-variavel_pipeta);
+            tft.setCursor(190,150);
+            tft.println("ml");}  
+        if(lista_vol[index_pipeta]==0 && estadoBE!=1){
+            muda+=1;
+            if(muda==1){zera_z();}
+            tft.fillRoundRect(15, 13, altura-30, 45,0, WHITE);
+            tft.setTextSize(2);
+            tft.setTextColor(BLACK);
+            tft.setCursor(50,28);
+            tft.println("PIPETAGEM FINALIZADA");
+                }
+
+
+}
 
 
 void toggle_emergencia1(void){
@@ -804,36 +805,37 @@ void volumes(){
     }
 
 void pipetar(void){
+    if (estadoBE==0){
         rele1=0;
         //rele2=0;
         wait(0.1);
         //rele2=1;
-        rele1=1;
+        rele1=1;}
 
     }
 
 
 void solta(int index){
-    while((contador_x!=lista_x[index] || contador_y!=lista_y[index])&& estadoBE!=1){
-        if(contador_x-lista_x[index]<0 ){
+    while((contador_x!=lista_x[index] || contador_y!=lista_y[index]) && estadoBE==0){
+        if(contador_x-lista_x[index]<0 && estadoBE==0){
             Enable_x=0;
             Sentido_x=1;
             contador_x+=1;}
-        if(contador_x-lista_x[index]>0){
+        if(contador_x-lista_x[index]>0 && estadoBE==0){
             Enable_x=0;
             Sentido_x=0;
             contador_x-=1;}
-        if(contador_y-lista_y[index]<0){
+        if(contador_y-lista_y[index]<0 && estadoBE==0){
             Enable=0;
             Sentido=1;
             contador_y+=1;}
-        if(contador_y-lista_y[index]>0){
+        if(contador_y-lista_y[index]>0 && estadoBE==0){
             Enable=0;
             Sentido=0;
             contador_y-=1;}
-        if(contador_x==lista_x[index]){
+        if(contador_x==lista_x[index] && estadoBE==0){
             Enable_x=1;}
-        if(contador_y==lista_y[index]){
+        if(contador_y==lista_y[index] && estadoBE==0){
             Enable=1;}
         Passos=1;
         wait_us(sensibilidade_x);
@@ -843,26 +845,26 @@ void solta(int index){
 }
 
 void pega(){
-    while((contador_x!=lista_x[0] || contador_y!=lista_y[0]) && estadoBE!=1){
-        if(contador_x-lista_x[0]<0){
+    while((contador_x!=lista_x[0] || contador_y!=lista_y[0]) && estadoBE==0){
+        if(contador_x-lista_x[0]<0 && estadoBE==0){
             Enable_x=0;
             Sentido_x=1;
             contador_x+=1;}
-        if(contador_x-lista_x[0]>0){
+        if(contador_x-lista_x[0]>0 && estadoBE==0 ){
             Enable_x=0;
             Sentido_x=0;
             contador_x-=1;}
-        if(contador_y-lista_y[0]<0){
+        if(contador_y-lista_y[0]<0 && estadoBE==0){
             Enable=0;
             Sentido=1;
             contador_y+=1;}
-        if(contador_y-lista_y[0]>0){
+        if(contador_y-lista_y[0]>0 && estadoBE==0){
             Enable=0;
             Sentido=0;
             contador_y-=1;}
-        if(contador_x==lista_x[0]){
+        if(contador_x==lista_x[0] && estadoBE==0){
             Enable_x=1;}
-        if(contador_y==lista_y[0]){
+        if(contador_y==lista_y[0] && estadoBE==0){
             Enable=1;}
         Passos=1;
         wait_us(sensibilidade_x);
@@ -881,7 +883,7 @@ void pega(){
 
 void referenciamento() {
 
-    while (limite_x == 0 || limite_y == 0) {
+    while (limite_x == 0 || limite_y == 0 && estadoBE==0) {
 
         if(limite_x == 0){
 
@@ -892,7 +894,7 @@ void referenciamento() {
             Passos=0;
             wait_us(sensibilidade_x);
 
-            while (FDC_A_X == 1) {
+            while (FDC_A_X == 1 && estadoBE==0) {
 
                 Sentido_x = 1;
                 Passos = 1;
@@ -921,7 +923,7 @@ void referenciamento() {
             Passos=0;
             wait_us(sensibilidade_x);
 
-            while (FDC_A_Y == 1) {
+            while (FDC_A_Y == 1 && estadoBE==0) {
 
                 Sentido = 1;
                 Passos =1;
@@ -948,12 +950,14 @@ void referenciamento() {
 }
 
 void referenciamento_total(){
-    zera_z();
-    referenciamento();
+    if (estadoBE==0){
+        zera_z();
+        referenciamento();
+        }
 } 
 
 void posicao_z_pega(){
-    while(contador_z!=lista_z[0]){
+    while(contador_z!=lista_z[0] && estadoBE==0){
         if(contador_z-lista_z[0]>0){
             y=yAxis.read()*1000;
             Enable_z=1;
@@ -977,28 +981,59 @@ void posicao_z_pega(){
 
 }
 
+
+void posicao_z_solta(int index){
+    while(contador_z!=lista_z[index] && estadoBE==0){
+        if(contador_z-lista_z[index]>0){
+            y=yAxis.read()*1000;
+            Enable_z=1;
+            Sentido_z=1;
+            contador_z-=1;
+        }
+        if(contador_z-lista_z[index]<0){
+            y=yAxis.read()*1000;
+            Enable_z=1;
+            Sentido_z=0;
+            contador_z+=1;
+
+        }
+        if(contador_z==lista_z[index]){
+            Enable_z=0;}
+        Passos=1;
+        wait_us(sensibilidade_x);
+        Passos=0;
+        wait_us(sensibilidade_x);
+    }
+
+}
+
+
+
 void teste_pipeta(){
-    printf("entrou funcao");
-    while(index_pipeta <9 && estadoBE!=1){
-    printf(index_pipeta);
-            if(variavel_pipeta<lista_vol[index_pipeta]){
+    while(index_pipeta <9 && estadoBE==0){
+            if(variavel_pipeta<lista_vol[index_pipeta] && estadoBE==0){
+                tela_pipetagem();
                 zera_z();
                 pega();
                 posicao_z_pega();
-                wait(1);
+                if (estadoBE==0){wait(1);}
                 pipetar();
-                wait(1);
+                if (estadoBE==0){wait(2.5);}
                 zera_z();
                 solta(index_pipeta);
+                posicao_z_solta(index_pipeta);
+                if (estadoBE==0){wait(1);}
                 pipetar();
+                if (estadoBE==0){wait(2.5);}
                 variavel_pipeta+=1;
-                tela_pipetagem();}
+                tela_pipetagem();
+}
             else{
                 variavel_pipeta=0;
                 index_pipeta+=1;
                 tela_pipetagem();
             }
-        }
+                }
     }
 
 
@@ -1365,12 +1400,14 @@ void principal(void){
                 tela4=0; 
                 tela5=0; 
                 tela6=0;
-                ref=0;
+                muda=0;
+                ref=0; 
                 limite_x=0; 
                 limite_y=0;
+                limite_z=0;
                 index=0;
                 fixo_pipeta=0;
-                index_pipeta=0;
+                index_pipeta=1;
                 variavel_pipeta=0;
                 controle_da_pipeta = 1;
                 vol=1;
@@ -1386,7 +1423,8 @@ void principal(void){
             tft.setTextColor(BLACK);
             tft.setCursor(50,28);
             tft.println("PIPETAGEM INICIADA");
-            index_pipeta=0;
+            muda=0;
+            index_pipeta=1;
             variavel_pipeta=0;
             controle_da_pipeta = 1;
             }
@@ -1404,11 +1442,13 @@ void principal(void){
                 tela5=0; 
                 tela6=0;
                 ref=0;
+                muda=0;
                 limite_x=0; 
                 limite_y=0;
+                limite_z=0;
                 index=0;
                 fixo_pipeta=0;
-                index_pipeta=0;
+                index_pipeta=1;
                 variavel_pipeta=0;
                 controle_da_pipeta = 1;
                 vol=1;
